@@ -1,0 +1,17 @@
+{
+  "name": "pushman",
+  "version": "1.0.0",
+  "description": "node sdk of baidu push service",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "push",
+    "service",
+    "baidu",
+    "node"
+  ],
+  "author": "hishengs@gmail.com",
+  "license": "MIT"
+}
