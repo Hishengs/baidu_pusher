@@ -1,10 +1,10 @@
 /*
 * 百度消息推送 Node SDK, by Hisheng, version 1.0.0
 */
-var $http = require('./http.js')
+var $http = require('./http.js'), querystring = require('querystring'), crypto = require('crypto')
 module.exports = {
-	apiKey: 'bEBAoxcjE1GAsM1fDDRxrtyq',
-	secretKey: 'RMRlnezmpXsF1PGRGtTD3p8S9IwPVcQy',
+	apiKey: 'xxx',
+	secretKey: 'xxx',
 	//HTTP请求Header
 	headers: {
 		'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
@@ -34,23 +34,6 @@ module.exports = {
 		}
 		return url
 	},
-	//分割url
-	splitUrl: function(url){
-		var pattern = /^(?:(\w+):\/\/)?(?:(\w+):?(\w+)?@)?([^:\/\?#]+)(?::(\d+))?(\/[^\?#]+)?(?:\?([^#]+))?(?:#(\w+))?/
-		var res = pattern.exec(url)
-		return {
-			originUrl: res[0],
-			protocol: res[1] || 'http',
-			user: res[2],
-			password: res[3],
-			host: res[4],
-			port: res[5] || 80,
-			path: res[6],
-			query: res[7],
-			anchor: res[8],
-			baseUrl: (res[1]?res[1]:'') + "://" + (res[4]?res[4]:'') + (res[5]?res[5]:'') + (res[6]?res[6]:'')
-		}
-	},
 	/**
 	* 生成请求签名
 	* 详见: http://push.baidu.com/doc/restapi/sdk_developer
@@ -61,9 +44,7 @@ module.exports = {
 	* @example params = {get:"key=value&key2=value2",post:{key1:value1,key2:value2}}
 	*/
 	createSignKey: function(method, baseUrl, timestamp, params){
-		var crypto = require('crypto')
 		var signString = method.toUpperCase()+baseUrl
-		var querystring = require('querystring')
     var paramsGet = params.get?querystring.parse(params.get):{}
     var paramsPost = params.post?params.post:{}
     var params = {}
@@ -96,6 +77,12 @@ module.exports = {
       return '%' + c.charCodeAt(0).toString(16).toUpperCase()
     })
     return rv.replace(/\%20/g,'+')
+	},
+	splitArgs: function(arguments){
+		//支持args,successCallback,errorCallback
+		if(Object.prototype.toString.call(arguments[0]).slice(8,-1) == 'Object')
+			return {args:arguments[0],sCallback:arguments[1],eCallback:arguments[2]}
+		else return {args:{},sCallback:arguments[0],eCallback:arguments[1]}
 	},
 	//RESTFUL API, 统一格式: [GET|POST] http[s]://api.tuisong.baidu.com/rest/3.0/{class}/{method}?{query_string}
 	/*
@@ -149,55 +136,58 @@ module.exports = {
 	},
 	//查询标签组列表
 	queryTags: function(){
-		var options = arguments[0]?arguments[0]:{}//传入的可选参数
-		var url = this.urlPrefix+"app/query_tags?"
-		var querystring = require('querystring')
-		var timestamp = this.getCurrentTimestamp()
-		var method = options.method?options.method.toLowerCase():'get'
-		delete options.method
-
-		//生成signKey
-		if(method == 'post')var params = {post: options};
-		else var params = {get: querystring.stringify(options)}
-		var signKey = this.createSignKey(method, this.splitUrl(url).baseUrl, timestamp, params)
+		//支持args,successCallback,errorCallback
+		/*if(Object.prototype.toString.call(arguments[0]).slice(8,-1) == 'Object'){
+			var args = arguments[0]
+			var sCallback = arguments[1]
+			var eCallback = arguments[2]
+		}else {
+			var args = {}
+			var sCallback = arguments[0]
+			var eCallback = arguments[1]
+		}*/
+		var splitArgs = this.splitArgs(arguments)
 		
-		//构造请求url
-		url += this.getDefaultPublicParamsString(signKey,timestamp)
-		//url += this.urlencode(this.getDefaultPublicParamsString(signKey)+querystring.stringify(options))
-		url = this.appendExtraParamsToUrl(url,options)//将额外参数添加到url尾部
-		console.log('url => '+url)
+		var timestamp = this.getCurrentTimestamp(),method = splitArgs.args.method?splitArgs.args.method.toLowerCase():'get';
+		delete splitArgs.args.method
+		//生成signKey
+		var params = (method == 'post')?{post: splitArgs.args}:{get: querystring.stringify(splitArgs.args)}
+		var signKey = this.createSignKey(method, this.urlPrefix+"app/query_tags", timestamp, params)
 		//发送请求
-		if(method == 'get')
-			$http.get(url,{headers:this.headers},function(res){
-				var body = ""
-				res.setEncoding('utf8')
-				res.on('data',function(chunk){
-					console.log("chunk => "+JSON.stringify(chunk))
-					body += chunk
-				})
-			})
-		else {
-			options.apikey = this.apiKey,options.sign = signKey,options.timestamp = timestamp
-			$http.post(this.urlPrefix+"app/query_tags",options,{headers:this.headers},function(res){
-				var body = ""
-				res.setEncoding('utf8')
-				res.on('data',function(chunk){
-					console.log("chunk => "+JSON.stringify(chunk))
-					body += chunk
-				})
-			})
+		if(method == 'get'){
+			var url = this.appendExtraParamsToUrl((this.urlPrefix+"app/query_tags?" + this.getDefaultPublicParamsString(signKey,timestamp)),splitArgs.args)//构造请求url
+			$http.get(url,{headers:this.headers},splitArgs.sCallback)
+		}else { //POST 请求
+			splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
+			$http.post(this.urlPrefix+"app/query_tags",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
 		}
 	},
 	//创建标签
-	createTag: function(tag){
-		var url = this.urlPrefix+"app/create_tag?tag="+tag
+	createTag: function(){
+		var splitArgs = this.splitArgs(arguments)
+		
+		var timestamp = this.getCurrentTimestamp()
+		//生成signKey
+		var params = {post: splitArgs.args}
+		var signKey = this.createSignKey('post', this.urlPrefix+"app/create_tag", timestamp, params)
+		//发送请求
+		splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
+		$http.post(this.urlPrefix+"app/create_tag",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
 	},
 	//删除标签
-	delTag: function(tag){
-		var url = this.urlPrefix+"app/del_tag?tag="+tag
+	delTag: function(){
+		var splitArgs = this.splitArgs(arguments)
+		
+		var timestamp = this.getCurrentTimestamp()
+		//生成signKey
+		var params = {post: splitArgs.args}
+		var signKey = this.createSignKey('post', this.urlPrefix+"app/del_tag", timestamp, params)
+		//发送请求
+		splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
+		$http.post(this.urlPrefix+"app/del_tag",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
 	},
 	//添加设备到标签组
-	addDevicesToTag: function(tag,channel_ids){
+	addDevicesToTag: function(){
 		var url = this.urlPrefix+"tag/add_devices?tag="+tag+"&channel_ids="+channel_ids
 	},
 	//将设备从标签组中移除

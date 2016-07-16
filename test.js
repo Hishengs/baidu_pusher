@@ -31,4 +31,27 @@ $http.get(url,{},function(res){
 
 
 var pushman = require('./pushman.js')
-pushman.queryTags({tag:'xxx',method:'post'})
+/*pushman.queryTags({tag:'xxx',method:'get'},function(res){
+	var body = ""
+	res.setEncoding('utf8')
+	res.on('data',function(chunk){
+		console.log("chunk => "+JSON.stringify(chunk))
+		body += chunk
+	})
+})*/
+/*pushman.createTag({tag:'test_tag'},function(res){
+	var body = ""
+	res.setEncoding('utf8')
+	res.on('data',function(chunk){
+		console.log("chunk => "+JSON.stringify(chunk))
+		body += chunk
+	})
+})*/
+pushman.delTag({tag:'test_tag'},function(res){
+	var body = ""
+	res.setEncoding('utf8')
+	res.on('data',function(chunk){
+		console.log("chunk => "+JSON.stringify(chunk))
+		body += chunk
+	})
+})

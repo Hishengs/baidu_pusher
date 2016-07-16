@@ -9,11 +9,11 @@ module.exports = {
 		var res = pattern.exec(url)
 		return {
 			originUrl: res[0],
-			protocol: res[1],
+			protocol: res[1] || 'http',
 			user: res[2],
 			password: res[3],
 			host: res[4],
-			port: res[5],
+			port: res[5] || 80,
 			path: res[6],
 			query: res[7],
 			anchor: res[8],
