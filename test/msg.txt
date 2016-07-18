@@ -1,0 +1,75 @@
+url => post,http://api.tuisong.baidu.com/rest/3.0/push/single_device
+url => post,http://api.tuisong.baidu.com/rest/3.0/push/all
+url => post,http://api.tuisong.baidu.com/rest/3.0/push/tags
+url => post,http://api.tuisong.baidu.com/rest/3.0/push/batch_device
+url => post,http://api.tuisong.baidu.com/rest/3.0/report/query_msg_status
+url => post,http://api.tuisong.baidu.com/rest/3.0/report/query_timer_records
+request.get headers => 
+
+{"Content-Type":"application/x-www-form-urlencoded;charset=utf-8","User-Agent":"BCCS_SDK/3.0 Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36 Core/1.47.516.400 QQBrowser/9.4.8188.400","Content-Length":103}
+url => get,http://api.tuisong.baidu.com/rest/3.0/report/query_topic_records?apikey=bEBAoxcjE1GAsM1fDDRxrtyq&timestamp=1468812828&sign=64885e0c51ec9f2d0b4440935d0ba43d&topic_id=123
+url => post,http://api.tuisong.baidu.com/rest/3.0/app/query_tags
+url => post,http://api.tuisong.baidu.com/rest/3.0/app/create_tag
+url => post,http://api.tuisong.baidu.com/rest/3.0/app/del_tag
+url => post,http://api.tuisong.baidu.com/rest/3.0/tag/add_devices
+url => post,http://api.tuisong.baidu.com/rest/3.0/tag/del_devices
+url => post,http://api.tuisong.baidu.com/rest/3.0/report/device_num
+url => post,http://api.tuisong.baidu.com/rest/3.0/timer/query_list
+url => post,http://api.tuisong.baidu.com/rest/3.0/timer/cancel
+url => post,http://api.tuisong.baidu.com/rest/3.0/topic/query_list
+url => post,http://api.tuisong.baidu.com/rest/3.0/report/statistic_device
+url => post,http://api.tuisong.baidu.com/rest/3.0/report/statistic_device
+
+--------------- pushman.queryTopicRecords result ---------------
+"<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n         \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n <head>\n  <title>400 - Bad Request</title>\n </head>\n <body>\n  <h1>400 - Bad Request</h1>\n </body>\n</html>\n"
+
+--------------- pushman.queryTagDevicesNum result ---------------
+"{\"request_id\":2542129983,\"error_code\":30601,\"error_msg\":\"Method Not Allowed\"}"
+
+--------------- pushman.toBatchDevice result ---------------
+"{\"request_id\":2285424771,\"error_code\":30602,\"error_msg\":\"Request Params Not Valid, require parameter cuids is null\"}"
+
+--------------- pushman.delDevicesFromTag result ---------------
+"{\"request_id\":3382937069,\"error_code\":30602,\"error_msg\":\"Request Params Not Valid, parameter channel_ids must be Json-Array-String or Number-String\"}"
+
+--------------- pushman.cancelTimer result ---------------
+"{\"request_id\":859427817,\"error_code\":30605,\"error_msg\":\"Data Required Not Found\"}"
+
+--------------- pushman.toSigleDevice result ---------------
+"{\"request_id\":3362521995,\"error_code\":30608,\"error_msg\":\"Bind Relation Not Found\"}"
+
+--------------- pushman.delTag result ---------------
+"{\"request_id\":3224096584,\"error_code\":30611,\"error_msg\":\"Tag Not Found\"}"
+
+--------------- pushman.deviceStatisticReport result ---------------
+"{\"request_id\":2152411957,\"response_params\":{\"result\":{\"1468425600\":{\"total_term\":2,\"total_term_detail\":{\"1468476000\":1,\"1468483200\":2},\"new_term\":8,\"new_term_detail\":{\"1468465200\":5,\"1468476000\":1,\"1468479600\":2},\"del_term\":8,\"del_term_detail\":{\"1468465200\":6,\"1468479600\":2}},\"1468339200\":{\"total_term\":2,\"total_term_detail\":{\"1468411200\":2},\"new_term\":3,\"new_term_detail\":{\"1468411200\":3},\"del_term\":3,\"del_term_detail\":{\"1468411200\":3}},\"1467734400\":{\"total_term\":2,\"total_term_detail\":{\"1467777600\":1,\"1467806400\":2,\"1467810000\":2},\"new_term\":7,\"new_term_detail\":{\"1467774000\":1,\"1467777600\":4,\"1467806400\":1,\"1467810000\":1},\"del_term\":5,\"del_term_detail\":{\"1467774000\":1,\"1467777600\":3,\"1467810000\":1}}},\"total_num\":3}}"
+
+--------------- pushman.addDevicesToTag result ---------------
+"{\"request_id\":279303811,\"error_code\":30602,\"error_msg\":\"Request Params Not Valid, parameter channel_ids must be Json-Array-String or Number-String\"}"
+
+--------------- pushman.queryTimerList result ---------------
+"{\"request_id\":846171938,\"response_params\":{\"total_num\":0,\"result\":[]}}"
+
+--------------- pushman.queryTags result ---------------
+"{\"request_id\":2447318215,\"response_params\":{\"total_num\":5,\"result\":[{\"tid\":\"2067389527481531735\",\"tag\":\"default\",\"info\":\"default\",\"type\":0,\"create_time\":1467775573},{\"tid\":\"92283092\",\"tag\":\"admin\",\"info\":\"admin8340027\",\"type\":2,\"create_time\":1467775609},{\"tid\":\"92604990\",\"tag\":\"heysoo\",\"info\":\"heysoo8340027\",\"type\":2,\"create_time\":1468394927},{\"tid\":\"92612680\",\"tag\":\"xxx\",\"info\":\"xxx8340027\",\"type\":2,\"create_time\":1468404921},{\"tid\":\"92618545\",\"tag\":\"hello\",\"info\":\"hello8340027\",\"type\":2,\"create_time\":1468413175}]}}"
+
+--------------- pushman.deviceStatisticReport result ---------------
+"{\"request_id\":3157590983,\"response_params\":{\"result\":{\"1468425600\":{\"total_term\":2,\"total_term_detail\":{\"1468476000\":1,\"1468483200\":2},\"new_term\":8,\"new_term_detail\":{\"1468465200\":5,\"1468476000\":1,\"1468479600\":2},\"del_term\":8,\"del_term_detail\":{\"1468465200\":6,\"1468479600\":2}},\"1468339200\":{\"total_term\":2,\"total_term_detail\":{\"1468411200\":2},\"new_term\":3,\"new_term_detail\":{\"1468411200\":3},\"del_term\":3,\"del_term_detail\":{\"1468411200\":3}},\"1467734400\":{\"total_term\":2,\"total_term_detail\":{\"1467777600\":1,\"1467806400\":2,\"1467810000\":2},\"new_term\":7,\"new_term_detail\":{\"1467774000\":1,\"1467777600\":4,\"1467806400\":1,\"1467810000\":1},\"del_term\":5,\"del_term_detail\":{\"1467774000\":1,\"1467777600\":3,\"1467810000\":1}}},\"total_num\":3}}"
+
+--------------- pushman.queryMsgStatus result ---------------
+"{\"request_id\":2582657854,\"response_params\":{\"total_num\":1,\"result\":[{\"send_time\":1468483506,\"success\":1,\"total_num\":1,\"status\":0,\"msg_id\":\"2134821599873666515\"}]}}"
+
+--------------- pushman.queryTimerRecords result ---------------
+"{\"request_id\":968300282,\"response_params\":{\"timer_id\":\"123\",\"result\":[]}}"
+
+--------------- pushman.queryTopicList result ---------------
+"{\"request_id\":1423055089,\"response_params\":{\"total_num\":0,\"result\":[]}}"
+
+--------------- pushman.createTag result ---------------
+"{\"request_id\":3344342372,\"response_params\":{\"tag\":\"pushman\",\"result\":0}}"
+
+--------------- pushman.toAll result ---------------
+"{\"request_id\":111681747,\"response_params\":{\"msg_id\":\"232851333626342403\",\"send_time\":1468812827}}"
+
+--------------- pushman.toTag result ---------------
+"{\"request_id\":2656856372,\"response_params\":{\"msg_id\":\"2629306572174164211\",\"send_time\":1468812827}}"

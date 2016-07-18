@@ -3,8 +3,8 @@
 */
 var $http = require('./http.js'), querystring = require('querystring'), crypto = require('crypto')
 module.exports = {
-	apiKey: 'xxx',
-	secretKey: 'xxx',
+	apiKey: '',
+	secretKey: '',
 	//HTTP请求Header
 	headers: {
 		'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
@@ -63,8 +63,8 @@ module.exports = {
         signString += key+"="+params[key]
     })
     signString += this.secretKey
-    console.log("参与签名的字符串 => \n")
-    console.log(signString)
+    /*console.log("参与签名的字符串 => \n")
+    console.log(signString)*/
     var md5 = crypto.createHash('md5')
     signString = this.urlencode(signString)
     md5.update(signString)
@@ -84,6 +84,25 @@ module.exports = {
 			return {args:arguments[0],sCallback:arguments[1],eCallback:arguments[2]}
 		else return {args:{},sCallback:arguments[0],eCallback:arguments[1]}
 	},
+	//发送请求
+	sendRequest: function(path,arguments){
+		var splitArgs = this.splitArgs(arguments)
+		var method = splitArgs.args.method?splitArgs.args.method.toLowerCase():'post' //默认POST请求方法
+		delete splitArgs.args.method
+		var timestamp = this.getCurrentTimestamp()
+		//生成signKey
+		var params = {post: splitArgs.args}
+		var signKey = this.createSignKey(method, this.urlPrefix+path, timestamp, params)
+		if(method == 'get'){
+			var url = this.appendExtraParamsToUrl((this.urlPrefix+path+'?'+this.getDefaultPublicParamsString(signKey,timestamp)),splitArgs.args)//构造请求url
+			$http.get(url,{headers:this.headers},splitArgs.sCallback)
+			console.log('url => get,'+url)
+		}else { //POST 请求
+			splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
+			$http.post(this.urlPrefix+path,splitArgs.args,{headers:this.headers},splitArgs.sCallback)
+			console.log('url => post,'+this.urlPrefix+path)
+		}
+	},
 	//RESTFUL API, 统一格式: [GET|POST] http[s]://api.tuisong.baidu.com/rest/3.0/{class}/{method}?{query_string}
 	/*
 	* {query_string}由通用参数部分和具体API调用参数部分组成。
@@ -95,261 +114,74 @@ module.exports = {
 	*/
 	//推送消息到单台设备
 	toSigleDevice: function(){
-		var splitArgs = this.splitArgs(arguments)
-		var timestamp = this.getCurrentTimestamp()
-		//生成signKey
-		var params = {post: splitArgs.args}
-		var signKey = this.createSignKey('post', this.urlPrefix+"push/single_device", timestamp, params)
-		//发送请求
-		splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-		$http.post(this.urlPrefix+"push/single_device",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
+		this.sendRequest("push/single_device",arguments)
 	},
 	//广播消息
 	toAll: function(){
-		var splitArgs = this.splitArgs(arguments)
-		var timestamp = this.getCurrentTimestamp()
-		//生成signKey
-		var params = {post: splitArgs.args}
-		var signKey = this.createSignKey('post', this.urlPrefix+"push/all", timestamp, params)
-		//发送请求
-		splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-		$http.post(this.urlPrefix+"push/all",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
+		this.sendRequest("push/all",arguments)
 	},
 	//推送消息给指定的标签
 	toTag: function(){
-		var splitArgs = this.splitArgs(arguments)
-		var timestamp = this.getCurrentTimestamp()
-		//生成signKey
-		var params = {post: splitArgs.args}
-		var signKey = this.createSignKey('post', this.urlPrefix+"push/tags", timestamp, params)
-		//发送请求
-		splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-		$http.post(this.urlPrefix+"push/tags",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
+		this.sendRequest("push/tags",arguments)
 	},
 	//推送消息到给定的一组设备(批量单播)
 	toBatchDevice: function(){
-		var splitArgs = this.splitArgs(arguments)
-		var timestamp = this.getCurrentTimestamp()
-		//生成signKey
-		var params = {post: splitArgs.args}
-		var signKey = this.createSignKey('post', this.urlPrefix+"push/batch_device", timestamp, params)
-		//发送请求
-		splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-		$http.post(this.urlPrefix+"push/batch_device",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
+		this.sendRequest("push/batch_device",arguments)
 	},
 	//查询消息的发送状态
 	queryMsgStatus: function(){
-		var splitArgs = this.splitArgs(arguments)
-		var timestamp = this.getCurrentTimestamp(),method = splitArgs.args.method?splitArgs.args.method.toLowerCase():'get';
-		delete splitArgs.args.method
-		//生成signKey
-		var params = (method == 'post')?{post: splitArgs.args}:{get: querystring.stringify(splitArgs.args)}
-		var signKey = this.createSignKey(method, this.urlPrefix+"report/query_tags", timestamp, params)
-		//发送请求
-		if(method == 'get'){
-			var url = this.appendExtraParamsToUrl((this.urlPrefix+"report/query_msg_status?" + this.getDefaultPublicParamsString(signKey,timestamp)),splitArgs.args)//构造请求url
-			$http.get(url,{headers:this.headers},splitArgs.sCallback)
-		}else { //POST 请求
-			splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-			$http.post(this.urlPrefix+"report/query_msg_status",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
-		}
+		this.sendRequest("report/query_msg_status",arguments)
 	},
 	//查询定时消息的发送记录
 	queryTimerRecords: function(){
-		var splitArgs = this.splitArgs(arguments)
-		var timestamp = this.getCurrentTimestamp()
-		//生成signKey
-		var params = {post: splitArgs.args}
-		var signKey = this.createSignKey('post', this.urlPrefix+"report/query_timer_records", timestamp, params)
-		//发送请求
-		splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-		$http.post(this.urlPrefix+"report/query_timer_records",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
+		this.sendRequest("report/query_timer_records",arguments)
 	},
 	//查询指定分类主题的发送记录
 	queryTopicRecords: function(topic_id){
-		var splitArgs = this.splitArgs(arguments)
-		var timestamp = this.getCurrentTimestamp(),method = splitArgs.args.method?splitArgs.args.method.toLowerCase():'get';
-		delete splitArgs.args.method
-		//生成signKey
-		var params = (method == 'post')?{post: splitArgs.args}:{get: querystring.stringify(splitArgs.args)}
-		var signKey = this.createSignKey(method, this.urlPrefix+"report/query_topic_records", timestamp, params)
-		//发送请求
-		if(method == 'get'){
-			var url = this.appendExtraParamsToUrl((this.urlPrefix+"report/query_topic_records?" + this.getDefaultPublicParamsString(signKey,timestamp)),splitArgs.args)//构造请求url
-			$http.get(url,{headers:this.headers},splitArgs.sCallback)
-		}else { //POST 请求
-			splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-			$http.post(this.urlPrefix+"report/query_topic_records",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
-		}
+		this.sendRequest("report/query_topic_records",arguments)
 	},
 	//查询标签组列表
 	queryTags: function(){
-		//支持args,successCallback,errorCallback
-		/*if(Object.prototype.toString.call(arguments[0]).slice(8,-1) == 'Object'){
-			var args = arguments[0]
-			var sCallback = arguments[1]
-			var eCallback = arguments[2]
-		}else {
-			var args = {}
-			var sCallback = arguments[0]
-			var eCallback = arguments[1]
-		}*/
-		var splitArgs = this.splitArgs(arguments)
-
-		var timestamp = this.getCurrentTimestamp(),method = splitArgs.args.method?splitArgs.args.method.toLowerCase():'get';
-		delete splitArgs.args.method
-		//生成signKey
-		var params = (method == 'post')?{post: splitArgs.args}:{get: querystring.stringify(splitArgs.args)}
-		var signKey = this.createSignKey(method, this.urlPrefix+"app/query_tags", timestamp, params)
-		//发送请求
-		if(method == 'get'){
-			var url = this.appendExtraParamsToUrl((this.urlPrefix+"app/query_tags?" + this.getDefaultPublicParamsString(signKey,timestamp)),splitArgs.args)//构造请求url
-			$http.get(url,{headers:this.headers},splitArgs.sCallback)
-		}else { //POST 请求
-			splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-			$http.post(this.urlPrefix+"app/query_tags",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
-		}
+		this.sendRequest("app/query_tags",arguments)
 	},
 	//创建标签
 	createTag: function(){
-		var splitArgs = this.splitArgs(arguments)
-
-		var timestamp = this.getCurrentTimestamp()
-		//生成signKey
-		var params = {post: splitArgs.args}
-		var signKey = this.createSignKey('post', this.urlPrefix+"app/create_tag", timestamp, params)
-		//发送请求
-		splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-		$http.post(this.urlPrefix+"app/create_tag",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
+		this.sendRequest("app/create_tag",arguments)
 	},
 	//删除标签
 	delTag: function(){
-		var splitArgs = this.splitArgs(arguments)
-
-		var timestamp = this.getCurrentTimestamp()
-		//生成signKey
-		var params = {post: splitArgs.args}
-		var signKey = this.createSignKey('post', this.urlPrefix+"app/del_tag", timestamp, params)
-		//发送请求
-		splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-		$http.post(this.urlPrefix+"app/del_tag",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
+		this.sendRequest("app/del_tag",arguments)
 	},
 	//添加设备到标签组
 	addDevicesToTag: function(){
-		var splitArgs = this.splitArgs(arguments)
-		var timestamp = this.getCurrentTimestamp()
-		//生成signKey
-		var params = {post: splitArgs.args}
-		var signKey = this.createSignKey('post', this.urlPrefix+"tag/add_devices", timestamp, params)
-		//发送请求
-		splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-		$http.post(this.urlPrefix+"tag/add_devices",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
+		this.sendRequest("tag/add_devices",arguments)
 	},
 	//将设备从标签组中移除
 	delDevicesFromTag: function(){
-		var splitArgs = this.splitArgs(arguments)
-		var timestamp = this.getCurrentTimestamp()
-		//生成signKey
-		var params = {post: splitArgs.args}
-		var signKey = this.createSignKey('post', this.urlPrefix+"tag/del_devices", timestamp, params)
-		//发送请求
-		splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-		$http.post(this.urlPrefix+"tag/del_devices",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
+		this.sendRequest("tag/del_devices",arguments)
 	},
 	//查询标签组设备数量
 	queryTagDevicesNum: function(){
-		var splitArgs = this.splitArgs(arguments)
-		var timestamp = this.getCurrentTimestamp(),method = splitArgs.args.method?splitArgs.args.method.toLowerCase():'get';
-		delete splitArgs.args.method
-		//生成signKey
-		var params = (method == 'post')?{post: splitArgs.args}:{get: querystring.stringify(splitArgs.args)}
-		var signKey = this.createSignKey(method, this.urlPrefix+"report/device_num", timestamp, params)
-		//发送请求
-		if(method == 'get'){
-			var url = this.appendExtraParamsToUrl((this.urlPrefix+"report/device_num?" + this.getDefaultPublicParamsString(signKey,timestamp)),splitArgs.args)//构造请求url
-			$http.get(url,{headers:this.headers},splitArgs.sCallback)
-		}else { //POST 请求
-			splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-			$http.post(this.urlPrefix+"report/device_num",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
-		}
+		this.sendRequest("report/device_num",arguments)
 	},
 	//查询定时任务列表
 	queryTimerList: function(){
-		var splitArgs = this.splitArgs(arguments)
-		var timestamp = this.getCurrentTimestamp(),method = splitArgs.args.method?splitArgs.args.method.toLowerCase():'get';
-		delete splitArgs.args.method
-		//生成signKey
-		var params = (method == 'post')?{post: splitArgs.args}:{get: querystring.stringify(splitArgs.args)}
-		var signKey = this.createSignKey(method, this.urlPrefix+"timer/query_list", timestamp, params)
-		//发送请求
-		if(method == 'get'){
-			var url = this.appendExtraParamsToUrl((this.urlPrefix+"timer/query_list?" + this.getDefaultPublicParamsString(signKey,timestamp)),splitArgs.args)//构造请求url
-			$http.get(url,{headers:this.headers},splitArgs.sCallback)
-		}else { //POST 请求
-			splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-			$http.post(this.urlPrefix+"timer/query_list",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
-		}
+		this.sendRequest("timer/query_list",arguments)
 	},
 	//取消定时任务
 	cancelTimer: function(){
-		var splitArgs = this.splitArgs(arguments)
-		var timestamp = this.getCurrentTimestamp()
-		//生成signKey
-		var params = {post: splitArgs.args}
-		var signKey = this.createSignKey('post', this.urlPrefix+"timer/cancel", timestamp, params)
-		//发送请求
-		splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-		$http.post(this.urlPrefix+"timer/cancel",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
+		this.sendRequest("timer/cancel",arguments)
 	},
 	//查询分类主题列表
 	queryTopicList: function(){
-		var splitArgs = this.splitArgs(arguments)
-		var timestamp = this.getCurrentTimestamp(),method = splitArgs.args.method?splitArgs.args.method.toLowerCase():'get';
-		delete splitArgs.args.method
-		//生成signKey
-		var params = (method == 'post')?{post: splitArgs.args}:{get: querystring.stringify(splitArgs.args)}
-		var signKey = this.createSignKey(method, this.urlPrefix+"topic/query_list", timestamp, params)
-		//发送请求
-		if(method == 'get'){
-			var url = this.appendExtraParamsToUrl((this.urlPrefix+"topic/query_list?" + this.getDefaultPublicParamsString(signKey,timestamp)),splitArgs.args)//构造请求url
-			$http.get(url,{headers:this.headers},splitArgs.sCallback)
-		}else { //POST 请求
-			splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-			$http.post(this.urlPrefix+"topic/query_list",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
-		}
+		this.sendRequest("topic/query_list",arguments)
 	},
 	//当前设备的统计信息
 	deviceStatisticReport: function(){
-		var splitArgs = this.splitArgs(arguments)
-		var timestamp = this.getCurrentTimestamp(),method = splitArgs.args.method?splitArgs.args.method.toLowerCase():'get';
-		delete splitArgs.args.method
-		//生成signKey
-		var params = (method == 'post')?{post: splitArgs.args}:{get: querystring.stringify(splitArgs.args)}
-		var signKey = this.createSignKey(method, this.urlPrefix+"report/statistic_device", timestamp, params)
-		//发送请求
-		if(method == 'get'){
-			var url = this.appendExtraParamsToUrl((this.urlPrefix+"report/statistic_device?" + this.getDefaultPublicParamsString(signKey,timestamp)),splitArgs.args)//构造请求url
-			$http.get(url,{headers:this.headers},splitArgs.sCallback)
-		}else { //POST 请求
-			splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-			$http.post(this.urlPrefix+"report/statistic_device",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
-		}
+		this.sendRequest("report/statistic_device",arguments)
 	},
 	//查询分类主题统计信息
 	topicStatisticReport: function(){
-		var splitArgs = this.splitArgs(arguments)
-		var timestamp = this.getCurrentTimestamp(),method = splitArgs.args.method?splitArgs.args.method.toLowerCase():'get';
-		delete splitArgs.args.method
-		//生成signKey
-		var params = (method == 'post')?{post: splitArgs.args}:{get: querystring.stringify(splitArgs.args)}
-		var signKey = this.createSignKey(method, this.urlPrefix+"report/statistic_topic", timestamp, params)
-		//发送请求
-		if(method == 'get'){
-			var url = this.appendExtraParamsToUrl((this.urlPrefix+"report/statistic_topic?" + this.getDefaultPublicParamsString(signKey,timestamp)),splitArgs.args)//构造请求url
-			$http.get(url,{headers:this.headers},splitArgs.sCallback)
-		}else { //POST 请求
-			splitArgs.args.apikey = this.apiKey,splitArgs.args.sign = signKey,splitArgs.args.timestamp = timestamp
-			$http.post(this.urlPrefix+"report/statistic_topic",splitArgs.args,{headers:this.headers},splitArgs.sCallback)
-		}
+		this.sendRequest("report/statistic_topic",arguments)
 	}
 }

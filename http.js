@@ -38,10 +38,8 @@ module.exports = {
 		  headers: params.headers?params.headers:this.headers,
 		  protocol: urlArr.protocol?urlArr.protocol+':':'http:'
 		}
-		console.log("request.get params => \n")
-		console.log(params)
-		console.log("request.get headers => \n")
-		console.log(options)
+		/*console.log("request.get headers => \n")
+		console.log(JSON.stringify(options.headers))*/
 		var req = http.request(options,callback)
 		if(arguments[lastIndex]){req.on('error',arguments[lastIndex]);}//如果传入error callback
 		else req.on('error',this.errorCallback)
@@ -66,14 +64,14 @@ module.exports = {
 		  protocol: urlArr.protocol?urlArr.protocol+':':'http:'
 		}
 		options.headers['Content-Length'] = postData.length
-		console.log("options.headers => ")
-		console.log(options.headers)
+		/*console.log("options.headers => ")
+		console.log(options.headers)*/
 		var req = http.request(options,success_callback)
 		if(arguments[lastIndex]){req.on('error',arguments[lastIndex]);}//如果传入error callback
 		else req.on('error',this.errorCallback)
 		req.write(postData)
-		console.log("postData =>")
-		console.log(postData)
+		/*console.log("postData =>")
+		console.log(postData)*/
 		req.end()
 	},
 	errorCallback: function(err){
