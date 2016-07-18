@@ -1,0 +1,19 @@
+参与签名的字符串 => 
+
+GEThttp://api.tuisong.baidu.com/rest/3.0/report/statistic_deviceapikey=xxxtimestamp=1468699471xxx
+request.get params => 
+
+{ headers: 
+   { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+     'User-Agent': 'BCCS_SDK/3.0 Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36 Core/1.47.516.400 QQBrowser/9.4.8188.400' } }
+request.get headers => 
+
+{ hostname: 'api.tuisong.baidu.com',
+  port: 80,
+  path: '/rest/3.0/report/statistic_device?apikey=xxx&timestamp=1468699471&sign=8cc19cabd90161ffe1c8dc52808f9135',
+  method: 'GET',
+  headers: 
+   { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+     'User-Agent': 'BCCS_SDK/3.0 Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36 Core/1.47.516.400 QQBrowser/9.4.8188.400' },
+  protocol: 'http:' }
+chunk => "{\"request_id\":1305234271,\"error_code\":30600,\"error_msg\":\"Internal Server Error\"}"

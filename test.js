@@ -15,43 +15,15 @@ var params = {
 console.log('The created sign key is : \n')
 console.log(pushman.createSign(method,baseUrl,secretKey,params))*/
 
-//-------- test http request --------------
-/*var $http = require('./http.js')
-var url = 'http://api.tuisong.baidu.com/rest/3.0/test/echo'
-$http.get(url,{},function(res){
-	console.log('STATUS: ' + res.statusCode)
-	console.log('HEADERS: ' + JSON.stringify(res.headers))
-	var body = ""
-	res.setEncoding('utf8')
-	res.on('data',function(chunk){
-		body += chunk
-	})
-	console.log(body)
-},function(err){})*/
-
-
+//-------- test pushman methods --------------
 var pushman = require('./pushman.js')
-/*pushman.queryTags({tag:'xxx',method:'get'},function(res){
+pushman.toSigleDevice({msg:'a test msg from pushman',channel_id: ,method:'post'},function(res){
 	var body = ""
 	res.setEncoding('utf8')
 	res.on('data',function(chunk){
 		console.log("chunk => "+JSON.stringify(chunk))
 		body += chunk
 	})
-})*/
-/*pushman.createTag({tag:'test_tag'},function(res){
-	var body = ""
-	res.setEncoding('utf8')
-	res.on('data',function(chunk){
-		console.log("chunk => "+JSON.stringify(chunk))
-		body += chunk
-	})
-})*/
-pushman.delTag({tag:'test_tag'},function(res){
-	var body = ""
-	res.setEncoding('utf8')
-	res.on('data',function(chunk){
-		console.log("chunk => "+JSON.stringify(chunk))
-		body += chunk
-	})
+},function(err){
+	console.log('pushman.toSigleDevice => failed')
 })
